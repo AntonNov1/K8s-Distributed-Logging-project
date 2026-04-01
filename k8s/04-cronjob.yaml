@@ -1,0 +1,51 @@
+apiVersion: batch/v1
+
+kind: CronJob
+
+metadata:
+
+  name: log-archiver
+
+spec:
+
+  schedule: "*/10 * * * *" 
+
+  jobTemplate:
+
+    spec:
+
+      template:
+
+        spec:
+
+          containers:
+
+          - name: archiver
+
+            image: curlimages/curl 
+
+            command:
+
+            - /bin/sh
+
+            - -c
+
+            - |
+
+              echo "Starting backup..."
+
+              mkdir -p /app/logs
+
+              # Обращаемся к приложению через имя Сервиса (app-service)
+
+              curl -s http://app-service/logs > /app/logs/app.log
+
+              # Архивируем с добавлением текущего времени в имя файла
+
+              tar -czf /tmp/app-logs-$(date +%s).tar.gz /app/logs/
+
+              echo "Backup created in /tmp:"
+
+              ls -l /tmp/*.tar.gz
+
+          restartPolicy: OnFailure

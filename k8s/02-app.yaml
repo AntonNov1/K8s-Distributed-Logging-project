@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+
+  name: my-app
+
+spec:
+
+  replicas: 3
+
+  selector:
+
+    matchLabels:
+
+      app: my-app
+
+  template:
+
+    metadata:
+
+      labels:
+
+        app: my-app
+
+    spec:
+
+      containers:
+
+      - name: app-container
+
+        image: custom-app-image:latest 
+
+        imagePullPolicy: IfNotPresent 
+
+        ports:
+
+        - containerPort: 8080
+
+        envFrom:
+
+        - configMapRef:
+
+            name: app-config
+
+        volumeMounts:
+
+        - name: logs-volume
+
+          mountPath: /app/logs
+
+      volumes:
+
+      - name: logs-volume
+
+        emptyDir: {} 
+
+---
+
+apiVersion: v1
+
+kind: Service
+
+metadata:
+
+  name: app-service
+
+spec:
+
+  selector:
+
+    app: my-app
+
+  ports:
+
+    - protocol: TCP
+
+      port: 80
+
+      targetPort: 8080
+
+  type: ClusterIP

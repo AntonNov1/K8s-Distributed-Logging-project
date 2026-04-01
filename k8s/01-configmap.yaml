@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  GREETING: "Welcome to the custom app (from ConfigMap!)"
+  PORT: "8080"
