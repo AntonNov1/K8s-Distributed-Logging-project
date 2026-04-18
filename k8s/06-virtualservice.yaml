@@ -1,0 +1,46 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: my-app-vs
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - my-gateway
+  http:
+    # Маршрут POST /log с fault injection и таймаутом
+    - match:
+        - uri:
+            exact: /log
+          method:
+            exact: POST
+      fault:
+        delay:
+          fixedDelay: 2s
+          percentage:
+            value: 100
+      timeout: 1s
+      retries:
+        attempts: 2
+        perTryTimeout: 1s
+      route:
+        - destination:
+            host: app-service
+            port:
+              number: 80
+
+    # Основное приложение — все известные маршруты
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: app-service
+            port:
+              number: 80
+
+    # 404 для всех неизвестных маршрутов (catch-all)
+    - directResponse:
+        status: 404
+        body:
+          string: "Not Found"
